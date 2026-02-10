@@ -14,8 +14,6 @@
   },
   "dependencies": {
     "body-parser": "^2.2.2",
-    "ejs": "^4.0.1",
-    "express-handlebars": "3.0",
-    "pug": "^3.0.3"
+    "ejs": "^4.0.1"
   }
 }

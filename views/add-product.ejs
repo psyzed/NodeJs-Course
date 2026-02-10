@@ -1,4 +1,12 @@
-<main>
+<%- include('includes/head') %>
+    <link rel="stylesheet" href="/css/forms.css" />
+    <link rel="stylesheet" href="/css/product.css" />
+  </head>
+
+  <body>
+    <%- include('includes/nav') %>
+
+    <main>
       <form class="product-form" action="/admin/add-product" method="POST">
         <div class="form-control">
           <label for="title">Title</label>
@@ -8,6 +16,5 @@
         <button class="btn" type="submit">Add Product</button>
       </form>
     </main>
-  </body>
-
-</html>
+ 
+    <%- include('includes/end') %>
