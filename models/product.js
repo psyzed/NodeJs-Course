@@ -9,13 +9,26 @@ const getProductsFromFile = (cb) => {
     if (err) {
       return cb([]);
     }
-    cb(JSON.parse(fileContent));
+
+    if (!fileContent || fileContent.length === 0) {
+      return cb([]);
+    }
+
+    try {
+      cb(JSON.parse(fileContent));
+    } catch (parseError) {
+      console.log("Invalid JSON. Returning empty array.");
+      cb([]);
+    }
   });
 };
 
 class Product {
-  constructor(title) {
+  constructor(title, imageUrl, description, price) {
     this.title = title;
+    this.imageUrl = imageUrl;
+    this.description = description;
+    this.price = price;
   }
 
   save() {
