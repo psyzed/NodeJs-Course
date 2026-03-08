@@ -1,30 +1,10 @@
-const path = require("path");
-const fs = require("fs");
-const rootDir = require("../utils/path");
+const db = require("../utils/database");
 
-const p = path.join(rootDir, "data", "products.json");
-
-const getProductsFromFile = (cb) => {
-  fs.readFile(p, (err, fileContent) => {
-    if (err) {
-      return cb([]);
-    }
-
-    if (!fileContent || fileContent.length === 0) {
-      return cb([]);
-    }
-
-    try {
-      cb(JSON.parse(fileContent));
-    } catch (parseError) {
-      console.log("Invalid JSON. Returning empty array.");
-      cb([]);
-    }
-  });
-};
+const Cart = require("../models/cart");
 
 class Product {
-  constructor(title, imageUrl, description, price) {
+  constructor(id, title, imageUrl, description, price) {
+    this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
@@ -32,21 +12,20 @@ class Product {
   }
 
   save() {
-    getProductsFromFile((products) => {
-      products.push(this);
-      fs.writeFile(
-        path.join(rootDir, "data", "products.json"),
-        JSON.stringify(products),
-        (err) => {
-          console.log(err);
-        },
-      );
-    });
-    fs.readFile(p, (err, fileContent) => {});
+    return db.execute(
+      "INSERT INTO products (title, price, imageUrl, description) VALUES (?,?,?,?)",
+      [this.title, this.price, this.imageUrl, this.description],
+    );
   }
 
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
+  static deleteById(id) {}
+
+  static findById(id) {
+    return db.execute("SELECT * FROM products WHERE products.id = ?", [id]);
+  }
+
+  static fetchAll() {
+    return db.execute("SELECT * FROM products");
   }
 }
 
