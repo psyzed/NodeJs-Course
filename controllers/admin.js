@@ -11,7 +11,7 @@ function getAddProduct(req, res, next) {
 
 function getEditProduct(req, res, next) {
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
+  Product.findById(prodId)
     .then((product) => {
       res.render("admin/edit-product", {
         pageTitle: product.title,
@@ -24,13 +24,22 @@ function getEditProduct(req, res, next) {
 }
 
 function postAddProduct(req, res, next) {
-  req.user
-    .createProduct({
-      title: req.body.title,
-      price: req.body.price,
-      imageUrl: req.body.imageUrl,
-      description: req.body.description,
-    })
+  const title = req.body.title;
+  const price = req.body.price;
+  const imageUrl = req.body.imageUrl;
+  const description = req.body.description;
+  const user = req.user;
+
+  const newProd = new Product({
+    title: title,
+    price: price,
+    imageUrl: imageUrl,
+    description: description,
+    userId: user,
+  });
+
+  newProd
+    .save()
     .then(() => {
       res.redirect("/admin/products");
     })
@@ -40,30 +49,28 @@ function postAddProduct(req, res, next) {
 function postEditProduct(req, res, next) {
   const { productId, title, imageUrl, price, description } = req.body;
 
-  Product.findByPk(productId)
+  Product.findById(productId)
     .then((product) => {
       product.title = title;
       product.imageUrl = imageUrl;
       product.price = price;
       product.description = description;
 
-      return product.save();
+      return product.save().then(() => res.redirect("/admin/products"));
     })
-    .then(() => res.redirect("/admin/products"))
     .catch((err) => console.log(err));
 }
 
 function postDeleteProduct(req, res, next) {
   const productId = req.body.productId;
 
-  Product.destroy({ where: { id: productId } })
+  Product.findByIdAndDelete(productId)
     .then(() => res.redirect("/admin/products"))
     .catch((err) => console.log(err));
 }
 
 function getProducts(req, res, next) {
-  req.user
-    .getProducts()
+  Product.find()
     .then((products) => {
       res.render("admin/products", {
         prods: products,
