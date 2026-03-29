@@ -6,6 +6,7 @@ function getAddProduct(req, res, next) {
     path: "/admin/add-product",
     formsCSS: true,
     productCSS: true,
+    isAuth: req.session.loggedIn,
   });
 }
 
@@ -18,6 +19,7 @@ function getEditProduct(req, res, next) {
         docTitle: product.title,
         path: "/admin/edit-product",
         product: product,
+        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -28,7 +30,7 @@ function postAddProduct(req, res, next) {
   const price = req.body.price;
   const imageUrl = req.body.imageUrl;
   const description = req.body.description;
-  const user = req.user;
+  const user = req.session.user;
 
   const newProd = new Product({
     title: title,
@@ -76,6 +78,7 @@ function getProducts(req, res, next) {
         prods: products,
         docTitle: "Admin Products",
         path: "/admin/products",
+        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
