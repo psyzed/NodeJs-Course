@@ -30,6 +30,18 @@ function postLogout(req, res, next) {
   });
 }
 
+function getSignup(req, res, next) {
+  res.render("auth/signup", {
+    path: "/signup",
+     docTitle: "Signup",
+    isAuth: false,
+  });
+}
+
+function postSignup(req, res, next) {}
+
 exports.getLoginPage = getLoginPage;
 exports.postLogin = postLogin;
 exports.postLogout = postLogout;
+exports.getSignup = getSignup;
+exports.postSignup = postSignup;
