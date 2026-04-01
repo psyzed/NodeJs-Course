@@ -6,6 +6,8 @@ const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
+const csrf = require("csurf");
+const flash = require("connect-flash");
 
 const MONGODB_URI =
   "mongodb+srv://psyzed66:231187@nodecoursecluster.f8tp7mz.mongodb.net/shop?appName=NodeCourseCluster";
@@ -22,6 +24,7 @@ const authRoutes = require("./routes/auth");
 const errorController = require("./controllers/error");
 
 const User = require("./models/user");
+const csrfProtection = csrf();
 
 app.set("view engine", "ejs");
 app.engine("ejs", require("ejs").__express);
@@ -37,6 +40,8 @@ app.use(
     store: store,
   }),
 );
+app.use(csrfProtection);
+app.use(flash());
 
 app.use((req, res, next) => {
   User.findById(req.session.user?._id)
@@ -45,6 +50,12 @@ app.use((req, res, next) => {
       next();
     })
     .catch((err) => console.log(err));
+});
+
+app.use((req, res, next) => {
+  res.locals.isAuth = req.session.loggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 app.use("/admin", adminRoutes);

@@ -2,10 +2,12 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
 function getLoginPage(req, res, next) {
+  const errorMessage = req.flash("error")[0] || null;
+
   res.render("auth/login", {
     docTitle: "Login",
     path: "/login",
-    isAuth: false,
+    errorMessage,
   });
 }
 
@@ -16,6 +18,7 @@ function postLogin(req, res, next) {
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
+        req.flash("error", "Invalid email or password.");
         res.redirect("/login");
         return Promise.reject("User does not exist.");
       }
@@ -24,6 +27,7 @@ function postLogin(req, res, next) {
         .compare(password, user.password)
         .then((doMatch) => {
           if (!doMatch) {
+            req.flash("error", "Invalid email or password.");
             res.redirect("/login");
             return Promise.reject("Wrong password or email");
           }
@@ -51,10 +55,12 @@ function postLogout(req, res, next) {
 }
 
 function getSignup(req, res, next) {
+  const errorMessage = req.flash("error")[0] || null;
+
   res.render("auth/signup", {
     path: "/signup",
     docTitle: "Signup",
-    isAuth: false,
+    errorMessage,
   });
 }
 
@@ -66,6 +72,10 @@ function postSignup(req, res, next) {
   User.findOne({ email: email })
     .then((userDoc) => {
       if (userDoc) {
+        req.flash(
+          "error",
+          "E-mail already exists, please pick a different one.",
+        );
         res.redirect("/signup");
         return Promise.reject("User exists");
       }

@@ -8,7 +8,6 @@ function getProducts(req, res, next) {
         prods: products,
         docTitle: "Shop",
         path: "/products",
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -23,7 +22,6 @@ function getProduct(req, res, next) {
         docTitle: product.title,
         path: "/products",
         product: product,
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -36,7 +34,6 @@ function getIndex(req, res, next) {
         prods: products,
         docTitle: "Shop",
         path: "/",
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -50,7 +47,6 @@ function getCart(req, res, next) {
         path: "/cart",
         docTitle: "Your Cart",
         products: user.cart.items,
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -83,7 +79,6 @@ function getOrders(req, res, next) {
         path: "/orders",
         docTitle: "Your Orders",
         orders,
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -109,12 +104,12 @@ function postOrder(req, res, next) {
       console.log(products);
       const order = new Order({
         user: {
-          name: req.user.name,
+          email: req.user.email,
           userId: req.user,
         },
         products: products,
       });
-
+      
       return order.save();
     })
     .then(() => req.user.clearCart())

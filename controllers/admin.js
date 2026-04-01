@@ -6,7 +6,6 @@ function getAddProduct(req, res, next) {
     path: "/admin/add-product",
     formsCSS: true,
     productCSS: true,
-    isAuth: req.session.loggedIn,
   });
 }
 
@@ -19,7 +18,6 @@ function getEditProduct(req, res, next) {
         docTitle: product.title,
         path: "/admin/edit-product",
         product: product,
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -78,7 +76,6 @@ function getProducts(req, res, next) {
         prods: products,
         docTitle: "Admin Products",
         path: "/admin/products",
-        isAuth: req.session.loggedIn,
       });
     })
     .catch((err) => console.log(err));
