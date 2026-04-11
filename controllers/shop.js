@@ -28,12 +28,15 @@ function getProduct(req, res, next) {
 }
 
 function getIndex(req, res, next) {
+  const errorMessage = req.flash("error")[0] || null;
+  
   Product.find()
     .then((products) => {
       res.render("shop/index", {
         prods: products,
         docTitle: "Shop",
         path: "/",
+        errorMessage,
       });
     })
     .catch((err) => console.log(err));
@@ -109,7 +112,7 @@ function postOrder(req, res, next) {
         },
         products: products,
       });
-      
+
       return order.save();
     })
     .then(() => req.user.clearCart())

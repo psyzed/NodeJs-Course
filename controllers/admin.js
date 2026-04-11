@@ -1,4 +1,6 @@
+const product = require("../models/product");
 const Product = require("../models/product");
+const { validationResult } = require("express-validator");
 
 function getAddProduct(req, res, next) {
   res.render("admin/add-product", {
@@ -6,6 +8,9 @@ function getAddProduct(req, res, next) {
     path: "/admin/add-product",
     formsCSS: true,
     productCSS: true,
+    validationErrors: [],
+    product: {},
+    errorMessage: null,
   });
 }
 
@@ -18,6 +23,8 @@ function getEditProduct(req, res, next) {
         docTitle: product.title,
         path: "/admin/edit-product",
         product: product,
+        validationErrors: [],
+        errorMessage: null,
       });
     })
     .catch((err) => console.log(err));
@@ -29,6 +36,25 @@ function postAddProduct(req, res, next) {
   const imageUrl = req.body.imageUrl;
   const description = req.body.description;
   const user = req.session.user;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("admin/add-product", {
+      docTitle: "Add Product",
+      path: "/admin/add-product",
+      formsCSS: true,
+      productCSS: true,
+      errorMessage: "Please enter valid data.",
+      product: {
+        title,
+        price,
+        imageUrl,
+        description,
+      },
+      validationErrors: errors.array(),
+    });
+  }
 
   const newProd = new Product({
     title: title,
@@ -49,8 +75,31 @@ function postAddProduct(req, res, next) {
 function postEditProduct(req, res, next) {
   const { productId, title, imageUrl, price, description } = req.body;
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render("admin/edit-product", {
+      docTitle: "Edit Product",
+      path: "/admin/edit-product",
+      errorMessage: "Please enter valid data.",
+      product: {
+        _id: productId,
+        title,
+        imageUrl,
+        price,
+        description,
+      },
+      validationErrors: errors.array(),
+    });
+  }
+
   Product.findById(productId)
     .then((product) => {
+      if (product.userId.toString() !== req.user._id.toString()) {
+        req.flash("error", "You are not the owner of this product.");
+        res.redirect("/");
+        return Promise.reject();
+      }
+
       product.title = title;
       product.imageUrl = imageUrl;
       product.price = price;
@@ -64,13 +113,21 @@ function postEditProduct(req, res, next) {
 function postDeleteProduct(req, res, next) {
   const productId = req.body.productId;
 
-  Product.findByIdAndDelete(productId)
-    .then(() => res.redirect("/admin/products"))
+  Product.deleteOne({ _id: productId, userId: req.user._id })
+    .then((response) => {
+      if (response.deletedCount === 0) {
+        req.flash("error", "You are not the owner of this product.");
+        res.redirect("/");
+        return Promise.reject();
+      }
+
+      res.redirect("/admin/products");
+    })
     .catch((err) => console.log(err));
 }
 
 function getProducts(req, res, next) {
-  Product.find()
+  Product.find({ userId: req.user._id })
     .then((products) => {
       res.render("admin/products", {
         prods: products,
