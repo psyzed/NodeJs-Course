@@ -29,7 +29,7 @@ function getProduct(req, res, next) {
 
 function getIndex(req, res, next) {
   const errorMessage = req.flash("error")[0] || null;
-  
+
   Product.find()
     .then((products) => {
       res.render("shop/index", {
@@ -104,7 +104,7 @@ function postOrder(req, res, next) {
         qty: i.qty,
         productData: { ...i.productId._doc },
       }));
-      console.log(products);
+
       const order = new Order({
         user: {
           email: req.user.email,

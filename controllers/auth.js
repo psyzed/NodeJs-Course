@@ -130,7 +130,7 @@ function postSignup(req, res, next) {
       email: email || "",
       password: password || "",
     };
-    console.log(validationErrors.array());
+
     return res.status(422).render("auth/signup", {
       path: "/signup",
       docTitle: "Signup",
@@ -196,9 +196,8 @@ function postReset(req, res, next) {
         user.resetTokenExpiration = Date.now() + 3600000;
         return user.save();
       })
-      .then((response) => {
+      .then(() => {
         res.redirect("/");
-        console.log(req.body.email);
         transporter
           .sendMail({
             to: req.body.email,
