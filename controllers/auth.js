@@ -89,9 +89,17 @@ function postLogin(req, res, next) {
             res.redirect("/");
           });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function postLogout(req, res, next) {
@@ -159,7 +167,11 @@ function postSignup(req, res, next) {
       });
       res.redirect("/login");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function getReset(req, res, next) {
@@ -209,7 +221,11 @@ function postReset(req, res, next) {
           .then((r) => console.log(r));
       })
 
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+      });
   });
 }
 
@@ -235,7 +251,11 @@ function getNewPassword(req, res, next) {
         passwordToken: token,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function postNewPassword(req, res, next) {
@@ -270,7 +290,11 @@ function postNewPassword(req, res, next) {
       return foundUser.save();
     })
     .then(() => res.redirect("/login"))
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 exports.getLoginPage = getLoginPage;

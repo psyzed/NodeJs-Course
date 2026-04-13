@@ -1,4 +1,3 @@
-const product = require("../models/product");
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
 
@@ -27,7 +26,11 @@ function getEditProduct(req, res, next) {
         errorMessage: null,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function postAddProduct(req, res, next) {
@@ -68,7 +71,11 @@ function postAddProduct(req, res, next) {
     .then(() => {
       res.redirect("/admin/products");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function postEditProduct(req, res, next) {
@@ -106,7 +113,11 @@ function postEditProduct(req, res, next) {
 
       return product.save().then(() => res.redirect("/admin/products"));
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 function postDeleteProduct(req, res, next) {
@@ -134,7 +145,11 @@ function getProducts(req, res, next) {
         path: "/admin/products",
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 }
 
 exports.getAddProduct = getAddProduct;
