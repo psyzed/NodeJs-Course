@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
+const { deleteFile } = require("../utils/file");
 
 function getAddProduct(req, res, next) {
   res.render("admin/add-product", {
@@ -36,9 +37,27 @@ function getEditProduct(req, res, next) {
 function postAddProduct(req, res, next) {
   const title = req.body.title;
   const price = req.body.price;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const description = req.body.description;
   const user = req.session.user;
+
+  if (!image) {
+    return res.status(422).render("admin/add-product", {
+      docTitle: "Add Product",
+      path: "/admin/add-product",
+      formsCSS: true,
+      productCSS: true,
+      errorMessage: "Attached file is not an image.",
+      product: {
+        title,
+        price,
+        description,
+      },
+      validationErrors: [],
+    });
+  }
+
+  const imageUrl = image.path;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -51,7 +70,6 @@ function postAddProduct(req, res, next) {
       product: {
         title,
         price,
-        imageUrl,
         description,
       },
       validationErrors: errors.array(),
@@ -79,7 +97,8 @@ function postAddProduct(req, res, next) {
 }
 
 function postEditProduct(req, res, next) {
-  const { productId, title, imageUrl, price, description } = req.body;
+  const { productId, title, price, description } = req.body;
+  const image = req.file;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -90,7 +109,6 @@ function postEditProduct(req, res, next) {
       product: {
         _id: productId,
         title,
-        imageUrl,
         price,
         description,
       },
@@ -107,13 +125,18 @@ function postEditProduct(req, res, next) {
       }
 
       product.title = title;
-      product.imageUrl = imageUrl;
       product.price = price;
       product.description = description;
+
+      if (image) {
+        deleteFile(product.imageUrl);
+        product.imageUrl = image.path;
+      }
 
       return product.save().then(() => res.redirect("/admin/products"));
     })
     .catch((err) => {
+      console.log(err);
       const error = new Error(err);
       error.httpStatusCode = 500;
       return next(error);
@@ -123,7 +146,19 @@ function postEditProduct(req, res, next) {
 function postDeleteProduct(req, res, next) {
   const productId = req.body.productId;
 
-  Product.deleteOne({ _id: productId, userId: req.user._id })
+  Product.findById(productId)
+    .then((product) => {
+      if (!product) {
+        return next(new Error("Product not found."));
+      }
+
+      deleteFile(product.imageUrl);
+      return Product.deleteOne({ _id: productId, userId: req.user._id });
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      return next(error);
+    })
     .then((response) => {
       if (response.deletedCount === 0) {
         req.flash("error", "You are not the owner of this product.");

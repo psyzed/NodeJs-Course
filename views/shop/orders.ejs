@@ -1,25 +1,25 @@
 <%- include('../includes/head') %>
-    <link rel="stylesheet" href="/css/product.css" />
-  </head>
+<link rel="stylesheet" href="/css/product.css" />
+</head>
 
-  <body>
-    <%- include('../includes/nav') %>
-    <main>
-      <% if(orders.length === 0) { %>
-      <h1>No orders yet!</h1>
-      <% } else {%>
-          <ul class="orders">
-            <% orders.forEach(order => { %>
-              <li class="orders__products">
-                <h1># <%= order._id %></h1>
-                <ul>
-                  <% order.products.forEach(item => { %>
-                    <li class="orders__products-item"><%= item.productData.title %> (<%= item.qty %>)</li>
-                <%  }); %>
-                  </ul>
-                </li>
-           <% }); %>
-          </ul>
-        <% } %>
-    </main>
-    <%- include('../includes/end') %>
+<body>
+  <%- include('../includes/nav') %>
+  <main>
+    <% if(orders.length === 0) { %>
+    <h1>No orders yet!</h1>
+    <% } else {%>
+    <ul class="orders">
+      <% orders.forEach(order => { %>
+      <li class="orders__products">
+        <h1 style="display: inline;"># <%= order._id %></h1> - <a href="/orders/<%= order._id %>">Invoice</a>
+        <ul>
+          <% order.products.forEach(item => { %>
+          <li class="orders__products-item"><%= item.productData.title %> (<%= item.qty %>)</li>
+          <%  }); %>
+        </ul>
+      </li>
+      <% }); %>
+    </ul>
+    <% } %>
+  </main>
+  <%- include('../includes/end') %>

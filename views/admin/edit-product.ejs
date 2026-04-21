@@ -16,8 +16,8 @@
         <input type="text" class="<%= validationErrors.find(e => e.path === 'title') ? 'form-control--invalid' : '' %>" name="title" id="title" value="<%= product.title %>" />
       </div>
       <div class="form-control">
-        <label for="imageUrl">Image URL</label>
-        <input type="text" class="<%= validationErrors.find(e => e.path === 'imageUrl') ? 'form-control--invalid' : '' %>" name="imageUrl" id="imageUrl" value="<%= product.imageUrl %>" />
+        <label for="image">Image</label>
+        <input type="file" name="image" id="image" />
       </div>
       <div class="form-control">
         <label for="price">Price</label>

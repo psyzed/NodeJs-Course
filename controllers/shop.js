@@ -1,5 +1,8 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
+const fs = require("fs");
+const path = require("path");
+const PDFDocument = require("pdfkit");
 
 function getProducts(req, res, next) {
   Product.find()
@@ -152,6 +155,74 @@ function postOrder(req, res, next) {
     });
 }
 
+function getInvoice(req, res, next) {
+  const orderId = req.params.orderId;
+  Order.findById(orderId)
+    .then((order) => {
+      if (!order) {
+        return next(new Error("No order found."));
+      }
+
+      if (order.user.userId.toString() !== req.user._id.toString()) {
+        return next(new Error("Unauthorized"));
+      }
+
+      const invoiceName = "invoice-" + orderId + ".pdf";
+
+      const pathToInvoice = path.join("data", "invoices", invoiceName);
+
+      const pdfDoc = new PDFDocument();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=" + invoiceName + "",
+      );
+      pdfDoc.pipe(fs.createWriteStream(pathToInvoice));
+      pdfDoc.pipe(res);
+
+      pdfDoc.text("Invoice");
+
+      pdfDoc.fontSize(26).text("Invoice", { underline: true });
+
+      pdfDoc.text("-----------------------");
+
+      let totalPrice = 0;
+
+      order.products.forEach((prod) => {
+        totalPrice += prod.qty * prod.productData.price;
+        pdfDoc
+          .fontSize(14)
+          .text(
+            `${prod.productData.title} - $${prod.productData.price} x ${prod.qty}`,
+          );
+      });
+
+      pdfDoc.fontSize(20).text(`Total Price: $${totalPrice.toFixed(2)}`);
+      pdfDoc.end();
+
+      // fs.readFile(pathToInvoice, (err, data) => {
+      //   if (err) {
+      //     return next(err);
+      //   } else {
+      //     res.setHeader("Content-Type", "application/pdf");
+      //     res.setHeader(
+      //       "Content-Disposition",
+      //       "attachment; filename='" + invoiceName + "'",
+      //     );
+      //     res.send(data);
+      //   }
+      // });
+
+      // const file = fs.createReadStream(pathToInvoice);
+
+      // file.pipe(res);
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      return next(error);
+    });
+}
+
 exports.getProducts = getProducts;
 exports.getProduct = getProduct;
 exports.getIndex = getIndex;
@@ -161,3 +232,4 @@ exports.getCheckout = getCheckout;
 exports.getOrders = getOrders;
 exports.postDeleteCartItem = postDeleteCartItem;
 exports.postOrder = postOrder;
+exports.getInvoice = getInvoice;

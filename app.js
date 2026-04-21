@@ -8,12 +8,11 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
-
-const MONGODB_URI =
-  "mongodb+srv://psyzed66:231187@nodecoursecluster.f8tp7mz.mongodb.net/shop?appName=NodeCourseCluster";
+const multer = require("multer");
+require("dotenv").config();
 
 const store = new MongoDBStore({
-  uri: MONGODB_URI,
+  uri: process.env.MONGODB_URI,
   collection: "sessions",
 });
 
@@ -26,12 +25,35 @@ const errorController = require("./controllers/error");
 const User = require("./models/user");
 const csrfProtection = csrf();
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 app.set("view engine", "ejs");
 app.engine("ejs", require("ejs").__express);
 app.set("views", "views");
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
+
 app.use(express.static(path.join(rootDir, "public")));
+app.use("/images", express.static(path.join(rootDir, "images")));
 app.use(
   session({
     secret: "my secret",
@@ -79,11 +101,12 @@ app.use(errorController.get404Page);
 app.use((error, req, res, next) => {
   res.status(500).render("500", {
     docTitle: "Server Error!",
+    path: "/500",
   });
 });
 
 mongoose
-  .connect(MONGODB_URI)
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("Database connected!");
     app.listen(3000);
